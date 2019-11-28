@@ -9,21 +9,20 @@
 import UIKit
 import RealmSwift
 
-
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     
     let realm = try! Realm()
     
     var categories: Results<Category>?
     
-//      let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
           
           loadCategories()
+        
+        tableView.rowHeight = 80.0
     }
 
     //Mark: - Add New Category
@@ -59,11 +58,17 @@ class CategoryViewController: UITableViewController {
             return categories?.count ?? 1
         }
         
+
+    
+    
+    
         override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             
-            let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
-            
+            let cell = super.tableView(tableView, cellForRowAt: indexPath)
+
             cell.textLabel?.text = categories?[indexPath.row].name ?? "No Categories Added yet"
+            
+//            cell.backgroundColor = UIColor.randomFlat
             return cell
     
     }
@@ -100,16 +105,20 @@ class CategoryViewController: UITableViewController {
             func loadCategories() {
                 
                 categories = realm.objects(Category.self)
-
-//                let request: NSFetchRequest<Category> = Category.fetchRequest()
-//
-//                do {
-//                categories = try context.fetch(request)
-//                } catch {
-//                    print("Error Fetching data from context \(error)")
-//                }
-//                
-//                tableView.reloadData()
             }
+
+    //Mark: - Delete Data From Swipe
+    
+    override func updateModel(at indexpath: IndexPath) {
+        if let categoryForDeletion = self.categories?[indexpath.row]{
+        do {
+            try self.realm.write {
+                self.realm.delete(categoryForDeletion)
+        }
+        } catch {
+            print("Error Deleting categories, \(error)")
         }
 
+        }
+    }
+}
